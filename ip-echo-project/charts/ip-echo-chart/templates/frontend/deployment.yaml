@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+  labels:
+    {{- include "ip-echo-chart.labels" . | nindent 4 }}
+    {{- include "ip-echo-chart.frontendLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      {{- include "ip-echo-chart.frontendLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ip-echo-chart.frontendLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: ip-displayer-frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            - name: BACKEND_URL
+              value: "http://{{ .Values.backend.name }}:{{ .Values.backend.servicePort }}"
+          ports:
+            - containerPort: {{ .Values.frontend.containerPort }}
+
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.frontend.probes.liveness.path }}
+              port: {{ .Values.frontend.containerPort }}
+            initialDelaySeconds: {{ .Values.frontend.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.probes.liveness.periodSeconds }}
+
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}

@@ -1,0 +1,69 @@
+# Global Configuration
+existingSecretName: ""
+
+# Routing configuration block
+httpRoute:
+  enabled: false
+
+ingress:
+  enabled: false
+
+# Java Backend Configuration
+backend:
+  name: ip-echo-api-service
+  image:
+    repository: ghcr.io/cherry-0-5/ip-echo-project-backend
+    pullPolicy: IfNotPresent
+    tag: "0.0.0-SHA" 
+  containerPort: 8088
+  servicePort: 8088
+  replicas: 2
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  probes:
+    liveness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 3
+    readiness:
+      path: /ready
+      initialDelaySeconds: 15
+      periodSeconds: 5
+      successThreshold: 1
+    startup:
+      path: /health
+      failureThreshold: 30
+      periodSeconds: 10
+
+# Node.js Frontend Configuration
+frontend:
+  name: ip-displayer
+  image:
+    repository: ghcr.io/cherry-0-5/ip-echo-project-frontend
+    pullPolicy: IfNotPresent
+    tag: "0.0.0-SHA"
+  containerPort: 80
+  servicePort: 80
+  replicas: 2
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/oci-load-balancer-shape: "10Mbps"
+  probes:
+    liveness:
+      path: /
+      initialDelaySeconds: 5
+      periodSeconds: 10

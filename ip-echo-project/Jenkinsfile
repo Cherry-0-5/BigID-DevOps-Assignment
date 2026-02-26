@@ -1,0 +1,174 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven39'       
+        jdk 'Java17'     
+    }
+
+    environment {
+        REGISTRY        = "ghcr.io"
+        PROJECT         = "cherry-0-5/ip-echo-project"
+        GITHUB_TOKEN    = credentials('GitHub-Token') 
+        CHART_PATH      = "charts/ip-echo-chart"
+        NAMESPACE       = "staging"
+        GIT_SHA         = ""
+        IMAGE_TAG       = ""
+    }
+
+    stages {
+        stage('Git Init & Tagging') {
+            steps {
+                script {
+                    checkout scm
+                    GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    IMAGE_TAG = "${GIT_SHA}-b${env.BUILD_ID}"
+                    
+                    // Set GitHub status to "Pending"
+                    step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: 'Pipeline in progress...', state: 'PENDING']]]])
+                }
+            }
+        }
+
+        stage('Package Build & Unit Test') {
+            parallel {
+                stage('Java Backend Analysis') {
+                    steps {
+                        dir('backend') {
+                            echo "Running JUnit, JaCoCo, Checkstyle, PMD, and SpotBugs..."
+                            sh "mvn clean verify -Djacoco.haltOnFailure=true"
+                        }
+                    }
+                }
+                stage('NodeJS Frontend Lint') {
+                    steps {
+                        dir('frontend') {
+                            sh "docker run --rm -v ${WORKSPACE}/frontend:/app -w /app node:20-slim sh -c 'npm install && npm run lint'"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Image Build & SBOM') {
+            steps {
+                script {
+                    def backendImage = "${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
+                    def frontendImage = "${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
+                    
+                    // Build images using subfolder contexts
+                    sh "docker build -t ${backendImage} ./backend"
+                    sh "docker build -t ${frontendImage} ./frontend"
+
+                    // Produce SBOM (Software Bill of Materials)
+                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock anchore/syft ${backendImage} -o cyclonedx-json > backend-sbom.json"
+                }
+            }
+        }
+
+        stage('Image Scan') {
+            steps {
+                script {
+                    def backendImage = "${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
+                    
+                    // Generate HTML Report for visualization
+                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --format template --template '@/contrib/html.tpl' -o trivy-report.html ${backendImage}"
+                    
+                    // Fail build if HIGH/CRITICAL vulnerabilities are found
+                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --exit-code 1 --severity HIGH,CRITICAL ${backendImage}"
+                }
+            }
+        }
+
+        stage('GHCR Registry Push') {
+            steps {
+                script {
+                    docker.withRegistry("https://${REGISTRY}", "Git-Creds") {
+                        sh "docker push ${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
+                        sh "docker push ${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Helm Lint') {
+            steps {
+                echo "Validating Helm Chart syntax post-push..."
+                sh "docker run --rm -v ${WORKSPACE}:/apps -w /apps alpine/helm:3.12.0 lint ${CHART_PATH} --strict"
+            }
+        }
+
+        stage('Deploy to OKE') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    sh """
+                    docker run --rm -v ${WORKSPACE}:/apps -v ${KUBECONFIG_FILE}:/root/.kube/config -w /apps \
+                    alpine/helm:3.12.0 upgrade --install ip-echo-staging ${CHART_PATH} \
+                      --namespace ${NAMESPACE} \
+                      --create-namespace \
+                      --set backend.image.tag=${IMAGE_TAG} \
+                      --set frontend.image.tag=${IMAGE_TAG} \
+                      --wait
+                    """
+                }
+            }
+        }
+
+        stage('Smoke Test') {
+            steps {
+                echo "Testing Endpoint: http://ip-echo-service.${NAMESPACE}.svc.cluster.local/health"
+                sh "sleep 20 && curl -f http://ip-echo-service.${NAMESPACE}.svc.cluster.local/health"
+            }
+        }
+
+        stage('Auto-Merge Promotion') {
+            when { not { branch 'main' } }
+            steps {
+                script {
+                    echo "Creating Pull Request and triggering Auto-Merge..."
+                    sh """
+                    export GH_TOKEN=${GITHUB_TOKEN}
+                    gh pr create --base main --head ${env.BRANCH_NAME} \
+                        --title "Automated Merge: Build #${env.BUILD_NUMBER}" \
+                        --body "Quality and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
+                    
+                    gh pr merge --auto --squash --delete-branch
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Visualize analysis results in Jenkins UI
+            junit 'backend/target/surefire-reports/*.xml'
+            jacoco execPattern: 'backend/target/*.exec'
+            archiveArtifacts artifacts: 'backend-sbom.json, trivy-report.html', fingerprint: true
+            
+            publishHTML([
+                allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                reportDir: '.', reportFiles: 'trivy-report.html', 
+                reportName: 'Trivy Security Report'
+            ])
+            
+            recordIssues tools: [
+                checkStyle(pattern: 'backend/target/checkstyle-result.xml'),
+                pmdParser(pattern: 'backend/target/pmd.xml'),
+                spotBugs(pattern: 'backend/target/spotbugsXml.xml')
+            ]
+        }
+        success {
+            script {
+                step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: 'Deployment & Auto-Merge Successful!', state: 'SUCCESS']]]])
+                slackSend(color: 'good', message: "✅ *Deployment Successful* - #${env.BUILD_NUMBER}\nArtifact: ${IMAGE_TAG}")
+            }
+        }
+        failure {
+            script {
+                step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: 'Pipeline Failed', state: 'FAILURE']]]])
+                slackSend(color: 'danger', message: "❌ *Build Failed* - #${env.BUILD_NUMBER}")
+            }
+        }
+    }
+}
