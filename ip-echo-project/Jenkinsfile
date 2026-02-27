@@ -34,7 +34,7 @@ pipeline {
             parallel {
                 stage('Java Backend Analysis') {
                     steps {
-                        dir('backend') {
+                        dir('ip-echo-api-service') {
                             echo "Running JUnit, JaCoCo, Checkstyle, PMD, and SpotBugs..."
                             sh "mvn clean verify -Djacoco.haltOnFailure=true"
                         }
@@ -42,7 +42,7 @@ pipeline {
                 }
                 stage('NodeJS Frontend Lint') {
                     steps {
-                        dir('frontend') {
+                        dir('ip-displayer-frontend') {
                             sh "docker run --rm -v ${WORKSPACE}/frontend:/app -w /app node:20-slim sh -c 'npm install && npm run lint'"
                         }
                     }
@@ -56,8 +56,8 @@ pipeline {
                     def backendImage = "${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
                     def frontendImage = "${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
                     
-                    sh "docker build -t ${backendImage} ./backend"
-                    sh "docker build -t ${frontendImage} ./frontend"
+                    sh "docker build -t ${backendImage} ./ip-displayer-frontend"
+                    sh "docker build -t ${frontendImage} ./ip-displayer-frontend"
 
                     // Produce SBOM (Software Bill of Materials)
                     sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock anchore/syft ${backendImage} -o cyclonedx-json > backend-sbom.json"
@@ -101,18 +101,18 @@ pipeline {
                     sh """
                     echo "Configuring kubectl with Service Account Token..."
                     
-                    kubectl config set-cluster oci-prod \
+                    kubectl config set-cluster ip-echo-cluster \
                       --server=${API_SERVER_URL} \
                       --insecure-skip-tls-verify=true
                     
-                    kubectl config set-credentials jenkins-sa --token=${TOKEN}
+                    kubectl config set-credentials sa-jenkins-ipecho --token=${KUBE_TOKEN}
                     
-                    kubectl config set-context oci-prod-context \
-                      --cluster=oci-prod \
-                      --user=jenkins-sa \
+                    kubectl config set-context ip-echo-cluster-context \
+                      --cluster=ip-echo-cluster \
+                      --user=sa-jenkins-ipecho \
                       --namespace=${NAMESPACE}
                     
-                    kubectl config use-context oci-prod-context
+                    kubectl config use-context ip-echo-cluster-context
                     
                     echo "Deploying with Helm..."
                     
@@ -154,8 +154,8 @@ pipeline {
 
     post {
         always {
-            junit 'backend/target/surefire-reports/*.xml'
-            jacoco execPattern: 'backend/target/*.exec'
+            junit 'ip-echo-api-service/target/surefire-reports/*.xml'
+            jacoco execPattern: 'ip-echo-api-service/target/*.exec'
             archiveArtifacts artifacts: 'backend-sbom.json, trivy-report.html', fingerprint: true
             
             publishHTML([
@@ -165,9 +165,9 @@ pipeline {
             ])
             
             recordIssues tools: [
-                checkStyle(pattern: 'backend/target/checkstyle-result.xml'),
-                pmdParser(pattern: 'backend/target/pmd.xml'),
-                spotBugs(pattern: 'backend/target/spotbugsXml.xml')
+                checkStyle(pattern: 'ip-echo-api-service/target/checkstyle-result.xml'),
+                pmdParser(pattern: 'ip-echo-api-service/target/pmd.xml'),
+                spotBugs(pattern: 'ip-echo-api-service/target/spotbugsXml.xml')
             ]
         }
         success {
