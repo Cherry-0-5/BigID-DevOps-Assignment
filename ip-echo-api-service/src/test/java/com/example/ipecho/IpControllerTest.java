@@ -11,10 +11,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * Integration tests for the IpController.
- * Ensures health, readiness, and IP logic function correctly.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 class IpControllerTest {
@@ -38,6 +34,25 @@ class IpControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ip").value(testIp));
     }
+
+    // --- NEW TESTS ADDED BELOW TO INCREASE COVERAGE ---
+
+    @Test
+    @DisplayName("GET / should handle empty X-Forwarded-For header gracefully")
+    void shouldHandleEmptyForwardedHeader() throws Exception {
+        mockMvc.perform(get("/").header("X-Forwarded-For", ""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ip").exists());
+    }
+
+    @Test
+    @DisplayName("GET /invalid-path should return 404 Not Found")
+    void shouldReturnNotFoundForInvalidPath() throws Exception {
+        mockMvc.perform(get("/invalid-path"))
+                .andExpect(status().isNotFound());
+    }
+    
+    // --- END OF NEW TESTS ---
 
     @Test
     @DisplayName("GET /health should return UP status for Liveness probes")
