@@ -59,7 +59,7 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${checkstyle.version}</version>
                 <configuration>
-                    <configLocation>../../../config/checkstyle/checkstyle.xml</configLocation>
+                    <configLocation>file:///var/lib/jenkins/workspace/Ip-echo-project-pipeline/ip-echo-api-service/config/checkstyle/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                 </configuration>
