@@ -46,4 +46,4 @@ helm upgrade ip-echo-release ./charts/ip-echo-chart
 # --- 4. Uninstall the Chart ---
 # Removes all resources deployed by the chart
 helm uninstall ip-echo-release
-'''
+'''bash
