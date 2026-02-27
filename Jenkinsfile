@@ -21,6 +21,7 @@ pipeline {
         stage('Git Init & Tagging') {
             steps {
                 script {
+		    deleteDir()
                     checkout scm
                     GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     IMAGE_TAG = "${GIT_SHA}-b${env.BUILD_ID}"
