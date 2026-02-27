@@ -41,7 +41,7 @@ pipeline {
   				mvn clean verify \
   				-T 1C \
 			        -Dmaven.repo.local=/opt/jenkins-cache/m2 \
-			        -DnvdApiKey=${NVD_KEY} \
+			        -DnvdApiKey=${NVD_API_KEY} \
 			        -Djacoco.haltOnFailure=true \
 			        -DconnectionTimeout=60000 \
 				-X
