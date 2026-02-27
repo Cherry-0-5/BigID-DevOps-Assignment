@@ -1,6 +1,6 @@
 # IP Echo API Service
 
-A high-performance RESTful API service built with Spring Boot to echo the client's IP address, respecting `X-Forwarded-For` headers for proxy compatibility.
+A high-performance RESTful API service built with Java Spring Boot to echo the client's IP address, respecting `X-Forwarded-For` headers for proxy compatibility.
 
 ## 🚀 Features
 - **Echo IP:** Returns the requester's IP address.
@@ -21,7 +21,23 @@ A high-performance RESTful API service built with Spring Boot to echo the client
    mvn spring-boot:run
    '''bash
 
-   Method,Endpoint,Description
-GET,/,Returns the client IP address (JSON).
-GET,/health,"Returns {""status"": ""UP""}."
-GET,/ready,"Returns {""status"": ""READY""}."
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Returns the client IP address in JSON format. |
+| `GET` | `/health` | Returns `{"status": "UP"}` for liveness probes. |
+| `GET` | `/ready` | Returns `{"status": "READY"}` for readiness probes. |
+
+## 📂 Project Structure
+
+```text
+src/
+├── main/
+│   └── java/com/example/ipecho/
+│       ├── IpController.java     # REST Controller handling HTTP requests
+│       ├── IpService.java        # Business logic for IP extraction
+│       └── IpEchoApplication.java # Spring Boot main class
+└── test/
+    └── java/com/example/ipecho/
+        └── IpControllerTest.java # Integration tests using MockMvc
