@@ -59,7 +59,7 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${checkstyle.version}</version>
                 <configuration>
-                    <configLocation>ip-echo-api-service/config/checkstyle/checkstyle.xml</configLocation>
+                    <configLocation>/root/Code-Workspace/BigID-DevOps-Assignment/ip-echo-api-service/config/checkstyle</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                 </configuration>
