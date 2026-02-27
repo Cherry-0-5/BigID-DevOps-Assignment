@@ -21,6 +21,6 @@ The frontend is deployed on Kubernetes and exposed to the internet using a **Clo
 /
 ├── server.js         # Express server configuration
 ├── package.json      # Dependencies and scripts
-├── src/       
-│   └── views/       # EJS templates (.ejs files)
+├── views/       
+│   └── index.ejs/       # EJS templates (.ejs files)
 └── Dockerfile        # Multi-stage definition (Build -> Distroless)
