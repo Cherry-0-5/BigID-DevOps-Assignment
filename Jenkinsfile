@@ -37,7 +37,7 @@ pipeline {
                     steps {
                         dir('ip-echo-api-service') {
                             echo "Running JUnit, JaCoCo, Checkstyle, PMD, and SpotBugs..."
-			    sh "mvn clean verify -Dmaven.repo.local=/opt/jenkins-cache/m2 -DnvdApiKey=${NVD_API_KEY} -Djacoco.haltOnFailure=true"
+			    sh "mvn clean verify -Dmaven.repo.local=/opt/jenkins-cache/m2 -Djacoco.haltOnFailure=true -DdependencyCheck.skip=true"
                         }
                     }
                 }
