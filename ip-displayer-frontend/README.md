@@ -2,9 +2,6 @@
 
 A lightweight frontend application that consumes the IP Echo API and displays the client's IP address in a clean user interface.
 
-## 📸 Preview
-![App Screenshot](assets/screenshot.png)
-
 ## 🛠️ Tech Stack & Security
 - **Runtime:** Node.js 20 (Distroless)
 - **Framework:** Express.js (serving EJS templates)
