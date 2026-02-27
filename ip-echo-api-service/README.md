@@ -16,4 +16,6 @@ A high-performance RESTful API service built with Spring Boot to echo the client
 ## ⚙️ Installation & Running
 1. Clone the repository:
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/Cherry-0-5/BigID-DevOps-Assignment.git
+   cd ip-echo-api-service
+   mvn spring-boot:run
