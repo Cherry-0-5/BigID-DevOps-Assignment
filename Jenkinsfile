@@ -37,14 +37,20 @@ pipeline {
                     steps {
                         dir('ip-echo-api-service') {
                             echo "Running JUnit, JaCoCo, Checkstyle, PMD, and SpotBugs..."
-                            sh "mvn clean verify -Djacoco.haltOnFailure=true"
+                            sh "mvn clean verify -Dmaven.repo.local=/opt/jenkins-cache/m2 -Djacoco.haltOnFailure=true"
                         }
                     }
                 }
                 stage('NodeJS Frontend Lint') {
                     steps {
                         dir('ip-displayer-frontend') {
-                            sh "docker run --rm -v ${WORKSPACE}/frontend:/app -w /app node:20-slim sh -c 'npm install && npm run lint'"
+                            sh """
+            			docker run --rm \
+              			   -v ${WORKSPACE}/frontend:/app \
+              			   -v /opt/jenkins-cache/frontend-node_modules:/app/node_modules \
+              			   -w /app node:20-slim \
+              			   sh -c 'npm install && npm run lint'
+               		    """
                         }
                     }
                 }
