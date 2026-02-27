@@ -52,12 +52,13 @@ pipeline {
                     steps {
                         dir('ip-displayer-frontend') {
                             sh """
-            			docker run --rm \
-              			   -v ${WORKSPACE}/frontend:/app \
-              			   -v /opt/jenkins-cache/frontend-node_modules:/app/node_modules \
-              			   -w /app node:20-slim \
-              			   sh -c 'npm install && npm run lint'
-               		    """
+				docker run --rm \
+  				--user \$(id -u):\$(id -g) \
+ 			        -v \$(pwd):/app \
+  				-v /opt/jenkins-cache/node_modules:/app/node_modules \
+  				-w /app node:20-slim \
+  				sh -c 'npm install && npm run lint'
+			    """
                         }
                     }
                 }
