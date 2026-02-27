@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Frontend of IP Echo Backend Service",
   "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "lint": "echo 'No linting configured'"
+  },
   "dependencies": {
     "axios": "^1.6.0",
     "ejs": "^3.1.9",
