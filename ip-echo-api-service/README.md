@@ -19,3 +19,9 @@ A high-performance RESTful API service built with Spring Boot to echo the client
    git clone https://github.com/Cherry-0-5/BigID-DevOps-Assignment.git
    cd ip-echo-api-service
    mvn spring-boot:run
+   '''bash
+
+   Method,Endpoint,Description
+GET,/,Returns the client IP address (JSON).
+GET,/health,"Returns {""status"": ""UP""}."
+GET,/ready,"Returns {""status"": ""READY""}."
