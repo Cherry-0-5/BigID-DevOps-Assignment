@@ -57,7 +57,7 @@ pipeline {
                     def backendImage = "${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
                     def frontendImage = "${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
                     
-                    sh "docker build -t ${backendImage} ./ip-displayer-frontend"
+                    sh "docker build -t ${backendImage} ./ip-echo-api-service"
                     sh "docker build -t ${frontendImage} ./ip-displayer-frontend"
 
                     // Produce SBOM (Software Bill of Materials)
@@ -136,7 +136,12 @@ pipeline {
         }
 
         stage('Auto-Merge Promotion') {
-            when { not { branch 'main' } }
+            when { 
+     	         allOf {
+            	     not { branch 'main' }
+           	     buildingTag() // Optional: Only on specific triggers
+       		 }
+   	    }
             steps {
                 script {
                     echo "Creating Pull Request and triggering Auto-Merge..."
