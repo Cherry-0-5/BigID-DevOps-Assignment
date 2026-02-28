@@ -41,3 +41,15 @@ src/
 └── test/
     └── java/com/example/ipecho/
         └── IpControllerTest.java # Integration tests using MockMvc
+
+# Backend Docker Container
+
+This `Dockerfile` is responsible for packaging the Java backend application into a container image. It takes the compiled JAR file produced by the build pipeline and prepares it to run safely and efficiently in a Kubernetes environment.
+
+
+### Key Responsibilities
+
+1.  **Lightweight Runtime:** It uses a slim Java runtime environment to keep the container image size small.
+2.  **Security:** It configures the application to run as a non-root user for improved security.
+3.  **Application Packaging:** It takes the finalized JAR file and sets it up to run inside the container.
+4.  **Network Configuration:** It exposes port **8088** for the application to handle requests.
