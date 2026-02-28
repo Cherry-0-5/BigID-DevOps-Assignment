@@ -1,14 +1,12 @@
-# Runner Stage Module (No Maven required)
+# Runner Stage Module
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Create a non-root user-group for security
+# Create a non-root user-group
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# --- Optimization ---
 # Copy the pre-built JAR from the Jenkins workspace.
-# Assumes this Dockerfile is run from the project root.
-COPY ip-echo-api-service/target/*.jar app.jar
+COPY target/*.jar app.jar
 
 # Adjust permissions for the JAR file
 RUN chown appuser:appgroup app.jar
