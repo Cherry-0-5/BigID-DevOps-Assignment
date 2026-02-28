@@ -25,8 +25,9 @@ public class IpController {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         String remoteIp;
 
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            // Take the first IP in the list (the actual client)
+	if (podIp != null && !podIp.isEmpty()) {
+            remoteIp = podIp;
+        } else if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             remoteIp = xForwardedFor.split(",")[0].trim();
         } else {
             remoteIp = request.getRemoteAddr();

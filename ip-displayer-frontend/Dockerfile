@@ -10,7 +10,7 @@ RUN npm install --production
 COPY . .
 
 # Runner stage - Distroless image
-FROM gcr.io/distroless/nodejs20-debian12
+FROM node:20-alpine
 WORKDIR /app
 
 # Copy from build stage with given appuser permission to copy app related files

@@ -56,11 +56,11 @@ frontend:
   replicas: 2
   resources:
     limits:
-      cpu: 1Gi
-      memory: 500m
+      cpu: 1000m
+      memory: 768Mi
     requests:
-      cpu: 512Mi
-      memory: 200m
+      cpu: 250m
+      memory: 512Mi
   service:
     type: LoadBalancer
     annotations:
