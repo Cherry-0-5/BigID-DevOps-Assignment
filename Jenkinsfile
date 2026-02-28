@@ -90,7 +90,7 @@ pipeline {
         stage('GHCR Registry Push') {
             steps {
                 script {
-                    docker.withRegistry("https://${REGISTRY}", "Git-Creds") {
+                    docker.withRegistry("https://${REGISTRY}", "GitHub-Token") {
                         sh "docker push ${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
                         sh "docker push ${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
                     }
