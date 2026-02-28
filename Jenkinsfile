@@ -115,7 +115,7 @@ pipeline {
                       --server=${API_SERVER_URL} \
                       --insecure-skip-tls-verify=true
                     
-                    kubectl config set-credentials sa-jenkins-ipecho --token=${KUBE_TOKEN}
+                    kubectl config set-credentials sa-jenkins-ipecho --token=${TOKEN}
                     
                     kubectl config set-context ip-echo-cluster-context \
                       --cluster=ip-echo-cluster \
