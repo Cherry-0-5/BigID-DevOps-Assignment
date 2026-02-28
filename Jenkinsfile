@@ -94,7 +94,6 @@ pipeline {
 
 			sh "docker push ${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
                         sh "docker push ${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
-                    }
                 }
             }
         }
