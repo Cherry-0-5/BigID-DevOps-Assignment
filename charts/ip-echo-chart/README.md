@@ -37,7 +37,7 @@ charts/ip-echo-chart/
     └── frontend/
         ├── deployment.yaml      # Deployment manifest of ip-displayer-frontend
         └── service.yaml         # Service manifest of ip-displayer-frontend
-'''
+```
 
 ## 🚀 Helm Deployment Command
 
