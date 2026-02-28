@@ -21,3 +21,7 @@
 .idea/
 *.tmproj
 .vscode/
+# Readme files
+README.md
+*.png
+kubernetes-architecture-ip-echo-project.png
