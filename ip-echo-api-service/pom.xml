@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>ip-echo-project</artifactId>
+    <artifactId>ip-echo-api-backend</artifactId>
     <version>1.0.0</version>
     <name>IP-Echo Service</name>
 
