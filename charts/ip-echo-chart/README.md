@@ -2,6 +2,25 @@
 
 This repository contains the Helm charts and Kubernetes manifests used to deploy the Backend and Frontend services to a Kubernetes cluster.
 
+## 🏛️ Architectural Overview
+This project uses a two-tier architecture deployed on Kubernetes:
+
+1.  **Frontend (Public):** The Node.js frontend is exposed via a **LoadBalancer** service, allowing traffic to enter from the internet.
+2.  **Backend (Private):** The Java backend runs entirely within the cluster using **ClusterIP** service and is not exposed to the internet. It communicates with the frontend internally.
+3.  **Service Discovery:** The frontend uses the Kubernetes internal DNS to find and connect to the backend service.
+
+## 🚀 Components
+
+### 1. Backend Service (`ip-echo-api-service`)
+* **Deployment:** Deploys the Java application pods.
+* **Service:** `ClusterIP` service to expose the backend internally to the frontend.
+
+
+### 2. Frontend Service (`ip-displayer-frontend`)
+* **Deployment:** Deploys the Node.js application pods.
+* **Service:** `LoadBalancer` service to expose the frontend to the internet via a Cloud Load Balancer.
+* 
+
 ## 📂 Project Structure
 
 ```text
@@ -13,22 +32,14 @@ charts/ip-echo-chart/
     ├── _helpers.tpl     # Template helpers
     ├── NOTES.txt        # Usage notes
     ├── backend/
-    │   ├── deployment.yaml
-    │   └── service.yaml
+    │   ├── deployment.yaml      # Deployment manifest of ip-echo-api-service
+    │   └── service.yaml         # Service manifest of ip-echo-api-service
     └── frontend/
-        ├── deployment.yaml
-        └── service.yaml
+        ├── deployment.yaml      # Deployment manifest of ip-displayer-frontend
+        └── service.yaml         # Service manifest of ip-displayer-frontend
+'''
 
-## 🚀 Components
-
-### 1. Backend Service (`ip-echo-api-service`)
-* **Deployment:** Deploys the Java application pods.
-* **Service:** `ClusterIP` service to expose the backend internally to the frontend.
-
-
-### 2. Frontend Service (`ip-displayer-frontend`)
-* **Deployment:** Deploys the Node.js (**Distroless**) application pods.
-* **Service:** `LoadBalancer` service to expose the frontend to the internet via a Cloud Load Balancer.
+## 🚀 Helm Deployment Command
 
 '''bash
 # --- 1. Lint the Chart ---
@@ -46,4 +57,6 @@ helm upgrade ip-echo-release ./charts/ip-echo-chart
 # --- 4. Uninstall the Chart ---
 # Removes all resources deployed by the chart
 helm uninstall ip-echo-release
-'''bash
+'''
+
+![Kubernetes Architecture Diagram](kubernetes-diagram.png)
