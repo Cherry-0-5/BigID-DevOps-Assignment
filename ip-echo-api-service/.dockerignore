@@ -19,10 +19,6 @@ __pycache__/
 *.pyc
 
 # Build Artifacts and Logs
-dist/
-build/
-out/
-target/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -41,4 +37,3 @@ Bash-Scripts/
 .env
 .env.local
 *.pem
-*.key
