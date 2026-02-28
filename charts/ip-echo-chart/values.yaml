@@ -1,6 +1,9 @@
 # Global Configuration
 existingSecretName: ""
 
+imagePullSecrets:
+  - name: ghcr-secret
+
 # Routing configuration block
 httpRoute:
   enabled: false
