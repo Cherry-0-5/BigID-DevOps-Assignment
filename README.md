@@ -59,19 +59,37 @@ The following diagram illustrates the flow between various stages of Jenkins pip
 
 ### Deploy to Staging Namespace
 ```bash
-# Create the staging namespace
-kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
+# Starting Minikube
+minikube start
 
-# Deploy Frontend
+# To use locally built Docker image
+eval $(minikube docker-env)
+
+# Build Docker images - Frontend and Backend
+docker build -t ip-echo-backend:local ./ip-echo-api-service
+docker build -t ip-echo-frontend:local ./ip-displayer-frontend
+
+# Create the staging namespace
+kubectl create namespace staging
+
+# Apply Frontend Deployments
 kubectl apply -f frontend/deployment.yaml -n staging
 
-# Deploy Frontend
-kubectl apply -f frontend/service.yaml -n staging
-
-# Deploy Backend
+# Apply Backend Deployments
 kubectl apply -f backend/deployment.yaml -n staging
 
-# Deploy Backend
+# Wait for pods to be ready
+kubectl rollout status deployment/ip-echo-frontend -n staging
+kubectl rollout status deployment/ip-echo-backend -n staging
+
+# Apply Frontend Service
+kubectl apply -f frontend/service.yaml -n staging
+
+# Apply Backend Service
 kubectl apply -f backend/service.yaml -n staging
+
+# Tunneling Frontend
+minikube service ip-echo-frontend -n staging
 ```
+
 
