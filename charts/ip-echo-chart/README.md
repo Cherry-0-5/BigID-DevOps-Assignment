@@ -41,23 +41,19 @@ charts/ip-echo-chart/
 
 ## 🚀 Helm Deployment Command
 
-'''bash
+```bash
 # --- 1. Lint the Chart ---
-# Validates the chart structure and templates for errors
 helm lint ./charts/ip-echo-chart
 
 # --- 2. Install the Chart ---
-# Deploys the components for the first time
 helm install ip-echo-release ./charts/ip-echo-chart
 
 # --- 3. Upgrade the Chart ---
-# Applies changes made to templates or values.yaml
 helm upgrade ip-echo-release ./charts/ip-echo-chart
 
 # --- 4. Uninstall the Chart ---
-# Removes all resources deployed by the chart
 helm uninstall ip-echo-release
-'''
+```
 
 
 ## 🏛️ Architectural Diagram
