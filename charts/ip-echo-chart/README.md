@@ -59,4 +59,7 @@ helm upgrade ip-echo-release ./charts/ip-echo-chart
 helm uninstall ip-echo-release
 '''
 
-![Kubernetes Architecture Diagram](charts/ip-echo-chart/kubernetes-architecture-ip-echo-project.png)
+
+## 🏛️ Architectural Diagram
+
+![Kubernetes Architecture Diagram](kubernetes-architecture-ip-echo-project.png)
