@@ -92,4 +92,4 @@ kubectl apply -f backend/service.yaml -n staging
 minikube service ip-echo-frontend -n staging
 ```
 
-
+> **Note:** Please execute the script files located in the `Bash-Scripts` folder to configure and deploy in local environment.
