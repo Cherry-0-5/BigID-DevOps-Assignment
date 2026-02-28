@@ -91,8 +91,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("https://${REGISTRY}", "GitHub-Token") {
-                        sh "docker push ${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
-                        sh "docker push ${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
+                        sh "set -x; docker push ${REGISTRY}/${PROJECT}-backend:${IMAGE_TAG}"
+                        sh "set -x; docker push ${REGISTRY}/${PROJECT}-frontend:${IMAGE_TAG}"
                     }
                 }
             }
