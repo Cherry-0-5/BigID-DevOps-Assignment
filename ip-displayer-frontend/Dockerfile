@@ -28,4 +28,4 @@ USER 1000
 EXPOSE 80
 
 # To start frontend application
-CMD ["/nodejs/bin/node", "server.js"]
+CMD ["node", "server.js"]
