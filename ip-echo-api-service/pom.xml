@@ -19,7 +19,6 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
-        <git.commit.sha>local</git.commit.sha>
         <env.BUILD_ID>0</env.BUILD_ID>
 
         <checkstyle.version>3.3.1</checkstyle.version>
@@ -46,7 +45,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}-${git.commit.sha}-b${env.BUILD_ID}</finalName>
+        <finalName>${project.artifactId}-${git.commit.id.abbrev}-b${env.BUILD_ID}</finalName>
 
         <plugins>
             <plugin>
@@ -55,11 +54,28 @@
             </plugin>
 
             <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.9.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <shortGitCommitIdLength>7</shortGitCommitIdLength>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${checkstyle.version}</version>
                 <configuration>
-                    <configLocation>file:///var/lib/jenkins/workspace/Ip-echo-project-pipeline/ip-echo-api-service/config/checkstyle/checkstyle.xml</configLocation>
+                    <configLocation>config/checkstyle/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                 </configuration>
