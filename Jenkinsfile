@@ -173,8 +173,7 @@ pipeline {
      	         allOf {
             	     not { branch 'main' }
 
-					 success('Deploy to OKE')
-					 success('Smoke Test')
+			expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' }
        		 }
    	    }
             steps {
