@@ -28,4 +28,4 @@ USER nonroot
 EXPOSE 8080
 
 # To start frontend application
-CMD ["/nodejs/bin/node", "server.js"]
+CMD ["/nodejs/bin/node", "/app/server.js"]
