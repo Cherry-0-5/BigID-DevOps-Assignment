@@ -138,17 +138,41 @@ pipeline {
         }
 
         stage('Smoke Test') {
-            steps {
-                echo "Testing Endpoint: http://ip-echo-service.${NAMESPACE}.svc.cluster.local/health"
-                sh "sleep 20 && curl -f http://ip-echo-service.${NAMESPACE}.svc.cluster.local/health"
-            }
-        }
+		    steps {
+		        script {
+		            try {
+		                echo 'Running smoke test against backend...'
+		                sh """
+		                kubectl run smoketest-pod -n staging --rm -i --tty \
+		                --image=docker.io/curlimages/curl:latest \
+		                --restart=Never -- \
+		                curl -f http://ip-echo-api-service.${NAMESPACE}.svc.cluster.local:8088/health
+		                """
+		            } catch (Exception e) {
+		                echo 'Smoke test failed.'
+		                throw e 
+		            } finally {
+		                echo 'Cleaning up debug pod...'
+		                sh "kubectl delete pod smoketest-pod -n staging --ignore-not-found=true"
+		            }
+		        }
+		    }
+		    post {
+		        failure {
+		            slackSend(
+		                channel: '#jenkins-alerts',
+		                color: 'danger',
+		                message: "FAILED: Smoke Test in Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+		            )
+		        }
+		    }
+		}
 
         stage('Auto-Merge Promotion') {
             when { 
      	         allOf {
             	     not { branch 'main' }
-           	     buildingTag() // Optional: Only on specific triggers
+           	     buildingTag() 
        		 }
    	    }
             steps {
@@ -199,3 +223,4 @@ pipeline {
         }
     }
 }
+
