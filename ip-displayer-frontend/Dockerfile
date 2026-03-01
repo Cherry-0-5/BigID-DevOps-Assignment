@@ -10,24 +10,22 @@ RUN npm install --production
 COPY . .
 
 # Runner stage - Distroless image
-FROM node:20-alpine
+FROM gcr.io/distroless/nodejs20-debian12
 WORKDIR /app
 
-RUN apk add --no-cache curl
-
 # Copy from build stage with given appuser permission to copy app related files
-COPY --from=build --chown=1000:1000 /app /app
+COPY --from=build --chown=nonroot:nonroot /app /app
 
 # Configuring Environment variables
 ENV NODE_ENV=production \
     PORT=8080 \
-    BACKEND_URL=http://ip-echo-service:8088
+    BACKEND_URL=http://ip-echo-api-service:8088
 
-# UID of App user for Distroless image
-USER 1000
+# Using non-root user for Distroless image
+USER nonroot
 
-# Exposing frontend to default 80 port
+# Exposing frontend to default 8080 port
 EXPOSE 8080
 
 # To start frontend application
-CMD ["node", "server.js"]
+CMD ["/nodejs/bin/node", "server.js"]
