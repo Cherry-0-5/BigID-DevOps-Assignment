@@ -172,7 +172,9 @@ pipeline {
             when { 
      	         allOf {
             	     not { branch 'main' }
-           	     buildingTag() 
+
+					 success('Deploy to OKE')
+					 success('Smoke Test')
        		 }
    	    }
             steps {
@@ -180,11 +182,16 @@ pipeline {
                     echo "Creating Pull Request and triggering Auto-Merge..."
                     sh """
                     export GH_TOKEN=${GITHUB_TOKEN}
-                    gh pr create --base main --head ${env.BRANCH_NAME} \
-                        --title "Automated Merge: Build #${env.BUILD_NUMBER}" \
-                        --body "Quality and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
                     
-                    gh pr merge --auto --squash --delete-branch
+			if ! gh pr list --head ${env.BRANCH_NAME} --json number | grep -q "\[\]"; then
+                		echo "Pull request already exists for ${env.BRANCH_NAME}."
+            		else
+                		gh pr create --base main --head ${env.BRANCH_NAME} \
+                    		--title "Automated Merge: Build #${env.BUILD_NUMBER}" \
+                    		--body "Deployment and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
+                
+                		gh pr merge --auto --squash --delete-branch
+            		fi
                     """
                 }
             }
@@ -223,4 +230,5 @@ pipeline {
         }
     }
 }
+
 
