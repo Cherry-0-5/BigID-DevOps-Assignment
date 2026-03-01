@@ -1,31 +1,25 @@
-# Build stage
+# --- Stage 1: Build ---
 FROM node:20-alpine AS build
+# Setting WORKDIR early
 WORKDIR /app
 
-# Install dependencies - to leverage Docker cache
 COPY package*.json ./
 RUN npm install --production
 
-# Copy the rest of the application code
 COPY . .
 
-# Runner stage - Distroless image
+# --- Stage 2: Runner ---
 FROM gcr.io/distroless/nodejs20-debian12
+# CRITICAL: Re-declare WORKDIR so the image knows where it is
 WORKDIR /app
 
-# Copy from build stage with given appuser permission to copy app related files
+# Copy everything from the build stage
 COPY --from=build --chown=nonroot:nonroot /app /app
 
-# Configuring Environment variables
-ENV NODE_ENV=production \
-    PORT=8080 \
-    BACKEND_URL=http://ip-echo-api-service:8088
+# Using the absolute path to the binary AND the script
+# This prevents the "ELF" syntax error by being explicit
+ENTRYPOINT ["/nodejs/bin/node"]
+CMD ["/app/server.js"]
 
-# Using non-root user for Distroless image
 USER nonroot
-
-# Exposing frontend to default 8080 port
 EXPOSE 8080
-
-# To start frontend application
-CMD ["/nodejs/bin/node", "/app/server.js"]
