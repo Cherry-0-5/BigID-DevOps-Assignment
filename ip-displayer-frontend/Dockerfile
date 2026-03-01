@@ -18,7 +18,7 @@ COPY --from=build --chown=1000:1000 /app /app
 
 # Configuring Environment variables
 ENV NODE_ENV=production \
-    PORT=80 \
+    PORT=8080 \
     BACKEND_URL=http://ip-echo-service:8088
 
 # UID of App user for Distroless image
