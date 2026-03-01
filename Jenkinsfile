@@ -181,19 +181,21 @@ pipeline {
                 script {
                     echo "Creating Pull Request and triggering Auto-Merge..."
                     sh """
-                    export GH_TOKEN=${GITHUB_TOKEN}
-                   
-		    if gh pr list --head ${env.BRANCH_NAME} --json number | grep -q "\[\]"; then
-              		echo "Creating new PR..."
-                	gh pr create --base main --head ${env.BRANCH_NAME} \
-                    	    --title "Automated Merge: Build #${env.BUILD_NUMBER}" \
-                   	    --body "Deployment and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
-            	   else
-                	echo "Pull request already exists for ${env.BRANCH_NAME}."
-            	   fi
- 
-		   gh pr merge --auto --squash --delete-branch ${env.BRANCH_NAME}
-                   """
+	    export GH_TOKEN=${GITHUB_TOKEN}
+            
+            PR_EXISTS=\$(gh pr list --head ${env.BRANCH_NAME} --json number -q '.[0].number')
+            
+            if [ -z "\$PR_EXISTS" ]; then
+                echo "Creating new PR..."
+                gh pr create --base main --head ${env.BRANCH_NAME} \
+                    --title "Automated Merge: Build #${env.BUILD_NUMBER}" \
+                    --body "Deployment and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
+            else
+                echo "Pull request already exists for ${env.BRANCH_NAME}."
+            fi
+            
+            gh pr merge --auto --squash --delete-branch ${env.BRANCH_NAME}
+		    """
                 }
             }
         }
