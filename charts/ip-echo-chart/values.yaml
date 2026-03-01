@@ -51,7 +51,7 @@ frontend:
     repository: ghcr.io/cherry-0-5/ip-echo-project-frontend
     pullPolicy: IfNotPresent
     tag: "0.0.0-SHA"
-  containerPort: 80
+  containerPort: 8080
   servicePort: 80
   replicas: 2
   resources:

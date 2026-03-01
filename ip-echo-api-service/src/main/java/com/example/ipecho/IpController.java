@@ -27,9 +27,7 @@ public class IpController {
 
 	String podIp = System.getenv("POD_IP");
 	
-	if (podIp != null && !podIp.isEmpty()) {
-            remoteIp = podIp;
-        } else if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             remoteIp = xForwardedFor.split(",")[0].trim();
         } else {
             remoteIp = request.getRemoteAddr();
