@@ -13,6 +13,8 @@ COPY . .
 FROM node:20-alpine
 WORKDIR /app
 
+RUN apk add --no-cache curl
+
 # Copy from build stage with given appuser permission to copy app related files
 COPY --from=build --chown=1000:1000 /app /app
 
