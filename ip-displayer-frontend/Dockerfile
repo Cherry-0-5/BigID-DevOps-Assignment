@@ -25,7 +25,7 @@ ENV NODE_ENV=production \
 USER 1000
 
 # Exposing frontend to default 80 port
-EXPOSE 80
+EXPOSE 8080
 
 # To start frontend application
 CMD ["node", "server.js"]
