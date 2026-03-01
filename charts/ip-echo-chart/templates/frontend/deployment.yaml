@@ -21,7 +21,7 @@ spec:
       {{- end }}
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 65532
       containers:
         - name: ip-displayer-frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
