@@ -9,6 +9,7 @@ metadata:
     {{- toYaml .Values.frontend.service.annotations | nindent 4 }}
 spec:
   type: {{ .Values.frontend.service.type }}
+  externalTrafficPolicy: Local
   ports:
     - port: {{ .Values.frontend.servicePort }}
       targetPort: {{ .Values.frontend.containerPort }}
