@@ -52,7 +52,7 @@ frontend:
     pullPolicy: IfNotPresent
     tag: "0.0.0-SHA"
   containerPort: 8080
-  servicePort: 8085
+  servicePort: 80
   replicas: 2
   resources:
     limits:
