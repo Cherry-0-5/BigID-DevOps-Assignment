@@ -2,50 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IP Echo | Visualizer</title>
     <style>
-        :root { --bg: #0f172a; --accent: #38bdf8; }
+        :root { 
+            --bg: #0f172a; 
+            --accent: #38bdf8; 
+            --success-green: #10b981;
+            --error-red: #ef4444;
+        }
+
         body {
-            margin: 0; background-color: var(--bg);
+            margin: 0; 
+            background-color: var(--bg);
             font-family: 'Inter', system-ui, sans-serif;
-            display: flex; align-items: center; justify-content: center; height: 100vh;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
             background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
         }
+
         .card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px; padding: 3rem; width: 420px;
-            text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 24px; 
+            padding: 3rem; 
+            /* Set a max-width and use margin auto for perfect PC centering */
+            width: 100%;
+            max-width: 450px; 
+            text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
+        /* Badge logic: Green block for Connected, specific Trace text in Red */
         .badge {
-            display: inline-block; padding: 4px 12px; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;
-            background: <%= status === 'Connected' ? '#10b98133' : '#ef444433' %>;
-            color: <%= status === 'Connected' ? '#10b981' : '#ef4444' %>;
+            display: inline-block; 
+            padding: 6px 16px; 
+            border-radius: 20px;
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            margin-bottom: 1.5rem;
+            /* Background remains green if connected */
+            background: <%= status.includes('Connected') ? '#10b98133' : '#ef444433' %>;
+            color: var(--success-green);
         }
-        h1 { color: white; font-size: 1.25rem; margin: 0; opacity: 0.9; }
+
+        .trace-id {
+            color: var(--error-red); /* Trace font specifically red */
+            margin-left: 4px;
+        }
+
+        h1 { 
+            color: white; 
+            font-size: 1.1rem; 
+            margin: 0; 
+            opacity: 0.8; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive and Centered IP Text */
+        .ip-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
         .ip-text {
-            font-size: 3.5rem; font-weight: 800; letter-spacing: -2px;
-            margin: 1.5rem 0; color: var(--accent);
+            /* clamp ensures it scales but stays centered on larger screens */
+            font-size: clamp(2.5rem, 6vw, 3.5rem); 
+            font-weight: 800; 
+            letter-spacing: -2px;
+            color: var(--accent);
             filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.3));
+            line-height: 1;
         }
-        .footer { color: #64748b; font-size: 0.75rem; margin-top: 2rem; line-height: 1.5; }
+
+        .footer { 
+            color: #94a3b8; 
+            font-size: 0.75rem; 
+            margin-top: 2rem; 
+            line-height: 1.6; 
+        }
+
+        /* Bold Architecture Style */
+        .arch-line {
+            font-weight: 700;
+            color: #cbd5e1;
+            display: block;
+            margin-bottom: 4px;
+        }
+
         .error-msg { color: #f87171; font-size: 0.85rem; margin-top: 1rem; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="badge"><%= status %></div>
+        <div class="badge">
+            <% if (status.includes('Connected')) { %>
+                Connected <span class="trace-id">- <%= status.match(/\(Trace: \d+\)/) %></span>
+            <% } else { %>
+                <%= status %>
+            <% } %>
+        </div>
+
         <h1>Originating IP Address</h1>
-        <div class="ip-text"><%= ip %></div>
+        
+        <div class="ip-container">
+            <div class="ip-text"><%= ip %></div>
+        </div>
         
         <% if (error) { %>
             <div class="error-msg">⚠️ <%= error %></div>
         <% } %>
 
         <div class="footer">
-            Architecture: Microservices (SRC Pattern)<br>
+            <span class="arch-line">Architecture: Edge-Internal Microservice (SRC Pattern)</span>
             Backend: <%= backend %>
         </div>
     </div>
