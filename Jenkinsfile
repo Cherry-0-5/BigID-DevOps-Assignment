@@ -194,7 +194,7 @@ pipeline {
                 		echo "Pull request already exists for ${env.SOURCE_BRANCH}."
             		   fi
         
-			   gh pr merge ${env.SOURCE_BRANCH} --auto --squash 
+			   gh pr merge ${env.SOURCE_BRANCH} --merge --subject "Automated Promotion: Build #${env.BUILD_NUMBER}" 
             		"""
                 }
             }
