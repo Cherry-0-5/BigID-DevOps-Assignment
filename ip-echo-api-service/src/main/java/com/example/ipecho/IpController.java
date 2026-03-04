@@ -3,7 +3,6 @@ package com.example.ipecho;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Enumeration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,13 +15,14 @@ public class IpController {
         String xForwardedFor = request.getHeader("x-forwarded-for");
         String remoteAddr = request.getRemoteAddr();
 
-        // 1. Determine if the current RemoteAddr is an internal cluster IP
+        // Check if the current RemoteAddr is an internal cluster/local IP
         boolean isInternal = remoteAddr.startsWith("10.") || 
                              remoteAddr.startsWith("172.") || 
                              remoteAddr.startsWith("192.168.") ||
                              remoteAddr.equalsIgnoreCase("localhost");
 
-        // 2. Resolve the final validated IP
+        // Logic: Trust Spring-processed remoteAddr if it's external. 
+        // Otherwise, fall back to the raw header or the system address.
         String validatedIp;
         if (!isInternal) {
             validatedIp = remoteAddr;
@@ -32,9 +32,11 @@ public class IpController {
             validatedIp = remoteAddr;
         }
 
-        // 3. Structured Logging for Production Traceability
+        // PMD FIX: Removed extra parentheses around the ternary expression
+        String displayTrace = traceId != null ? traceId : "N/A";
+        
         System.out.printf("[Trace-%s] Backend Validation: Received=%s, Validated=%s%n", 
-                          (traceId != null ? traceId : "N/A"), remoteAddr, validatedIp);
+                          displayTrace, remoteAddr, validatedIp);
 
         return Collections.singletonMap("ip", validatedIp);
     }
