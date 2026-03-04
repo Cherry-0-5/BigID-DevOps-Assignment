@@ -29,9 +29,16 @@ app.get('/', async (req, res) => {
         const response = await axios.get(BACKEND_URL, { 
             timeout: 3000,
             headers: {
+<<<<<<< release/DEV
+                'accept': 'application/json',
+                'x-forwarded-for': String(clientIp), 
+                'x-trace-id': String(traceId),
+                'user-agent': 'IP-Echo-Frontend'
+=======
                 'Accept': 'application/json',
                 'X-Forwarded-For': clientIp,
                 'X-Trace-ID': traceId
+>>>>>>> main
             }
         });
         const duration = Date.now() - startTime;
