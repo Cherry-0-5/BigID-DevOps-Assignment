@@ -66,6 +66,7 @@ frontend:
     externalTrafficPolicy: Local
     annotations:
       service.beta.kubernetes.io/oci-load-balancer-shape: "10Mbps"
+      service.beta.kubernetes.io/oci-load-balancer-backend-protocol: "HTTP"
   probes:
     liveness:
       path: /
