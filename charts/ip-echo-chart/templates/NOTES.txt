@@ -1,0 +1,43 @@
+1. Get the application URL by running these commands:
+
+{{- if .Values.httpRoute.enabled }}
+  {{- if .Values.httpRoute.hostnames }}
+    export APP_HOSTNAME={{ .Values.httpRoute.hostnames | first }}
+  {{- else }}
+    export APP_HOSTNAME=$(kubectl get --namespace {{(first .Values.httpRoute.parentRefs).namespace | default .Release.Namespace }} gateway/{{ (first .Values.httpRoute.parentRefs).name }} -o jsonpath="{.spec.listeners[0].hostname}")
+  {{- end }}
+  {{- if and .Values.httpRoute.rules (first .Values.httpRoute.rules).matches (first (first .Values.httpRoute.rules).matches).path.value }}
+    echo "Visit http://$APP_HOSTNAME{{ (first (first .Values.httpRoute.rules).matches).path.value }} to use your application"
+  {{- end }}
+
+{{- else if .Values.ingress.enabled }}
+  {{- range $host := .Values.ingress.hosts }}
+    {{- range .paths }}
+    http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+    {{- end }}
+  {{- end }}
+
+{{- else if contains "LoadBalancer" .Values.frontend.service.type }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available on Oracle Cloud.
+        You can watch its status by running:
+        kubectl get svc --namespace {{ .Release.Namespace }} -w {{ .Values.frontend.name }}
+
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Values.frontend.name }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo "Visit the Visualizer at: http://$SERVICE_IP:{{ .Values.frontend.servicePort }}"
+
+{{- else if contains "NodePort" .Values.frontend.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Values.frontend.name }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "Visit the Visualizer at: http://$NODE_IP:$NODE_PORT"
+
+{{- else if contains "ClusterIP" .Values.frontend.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ .Values.frontend.name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:{{ .Values.frontend.containerPort }}
+{{- end }}
+
+-------------------------------------------------------------------------------
+Backend Status (Internal Only):
+  The Java backend is accessible inside the cluster at:
+  http://{{ .Values.backend.name }}:{{ .Values.backend.servicePort }}
+-------------------------------------------------------------------------------

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.frontend.name }}
+  labels:
+    {{- include "ip-echo-chart.labels" . | nindent 4 }}
+    {{- include "ip-echo-chart.frontendLabels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.frontend.service.annotations | nindent 4 }}
+spec:
+  type: {{ .Values.frontend.service.type }}
+  externalTrafficPolicy: Local
+  ports:
+    - port: {{ .Values.frontend.servicePort }}
+      targetPort: {{ .Values.frontend.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "ip-echo-chart.frontendLabels" . | nindent 4 }}

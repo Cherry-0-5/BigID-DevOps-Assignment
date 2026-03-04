@@ -1,0 +1,10 @@
+apiVersion: v2
+name: ip-echo-chart
+description: Home assessment of DevOps Engineer position at BigID - Java Spring Boot application to echo client IP addresses
+type: application
+version: 0.1.0
+appVersion: "0.0.0-SHA"
+maintainers:
+  - name: Rakesh
+    email: rocky.rakesh18121997@gmail.com
+icon: https://raw.githubusercontent.com/fedej/multisort-icons/master/svg/java.svg

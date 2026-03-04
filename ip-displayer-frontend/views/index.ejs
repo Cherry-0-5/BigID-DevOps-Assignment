@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IP Echo | Visualizer</title>
+    <style>
+        :root { --bg: #0f172a; --accent: #38bdf8; }
+        body {
+            margin: 0; background-color: var(--bg);
+            font-family: 'Inter', system-ui, sans-serif;
+            display: flex; align-items: center; justify-content: center; height: 100vh;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px; padding: 3rem; width: 420px;
+            text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;
+            background: <%= status === 'Connected' ? '#10b98133' : '#ef444433' %>;
+            color: <%= status === 'Connected' ? '#10b981' : '#ef4444' %>;
+        }
+        h1 { color: white; font-size: 1.25rem; margin: 0; opacity: 0.9; }
+        .ip-text {
+            font-size: 3.5rem; font-weight: 800; letter-spacing: -2px;
+            margin: 1.5rem 0; color: var(--accent);
+            filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.3));
+        }
+        .footer { color: #64748b; font-size: 0.75rem; margin-top: 2rem; line-height: 1.5; }
+        .error-msg { color: #f87171; font-size: 0.85rem; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="badge"><%= status %></div>
+        <h1>Originating IP Address</h1>
+        <div class="ip-text"><%= ip %></div>
+        
+        <% if (error) { %>
+            <div class="error-msg">⚠️ <%= error %></div>
+        <% } %>
+
+        <div class="footer">
+            Architecture: Microservices (SRC Pattern)<br>
+            Backend: <%= backend %>
+        </div>
+    </div>
+</body>
+</html>

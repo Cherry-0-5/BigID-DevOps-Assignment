@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.backend.name }}
+  labels:
+    {{- include "ip-echo-chart.labels" . | nindent 4 }}
+    {{- include "ip-echo-chart.backendLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.backend.servicePort }}
+      targetPort: {{ .Values.backend.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "ip-echo-chart.backendLabels" . | nindent 4 }}
