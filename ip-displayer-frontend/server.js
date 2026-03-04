@@ -29,7 +29,8 @@ app.get('/', async (req, res) => {
         const response = await axios.get(BACKEND_URL, { 
             timeout: 3000,
             headers: {
-                'X-Forwarded-For': clientIp, // Passing the cleaned IP to Java
+                'Accept': 'application/json',
+                'X-Forwarded-For': clientIp,
                 'X-Trace-ID': traceId
             }
         });
