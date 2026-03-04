@@ -13,11 +13,6 @@ app.set('view engine', 'ejs');
 app.get('/', async (req, res) => {
     const traceId = Math.floor(Math.random() * 100000);
     
-    /**
-     * FIX: Manual Header Extraction
-     * We look at X-Forwarded-For first. If it's a list (e.g. "1.2.3.4, 10.0.0.1"), 
-     * we split it and take the first one (the actual client).
-     */
     const forwarded = req.headers['x-forwarded-for'];
     const clientIp = forwarded ? forwarded.split(',')[0].trim() : req.ip;
 
@@ -29,16 +24,10 @@ app.get('/', async (req, res) => {
         const response = await axios.get(BACKEND_URL, { 
             timeout: 3000,
             headers: {
-<<<<<<< release/DEV
                 'accept': 'application/json',
                 'x-forwarded-for': String(clientIp), 
                 'x-trace-id': String(traceId),
                 'user-agent': 'IP-Echo-Frontend'
-=======
-                'Accept': 'application/json',
-                'X-Forwarded-For': clientIp,
-                'X-Trace-ID': traceId
->>>>>>> main
             }
         });
         const duration = Date.now() - startTime;

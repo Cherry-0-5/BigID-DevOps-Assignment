@@ -12,40 +12,29 @@ public class IpController {
 
     @GetMapping("/")
     public Map<String, String> getClientIp(HttpServletRequest request) {
-        // --- DEBUG BLOCK: SEE EVERYTHING ARRIVING ---
-        System.out.println("DEBUG: All Received Headers:");
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String name = headerNames.nextElement();
-            System.out.println("  " + name + ": " + request.getHeader(name));
-        }
-        // --------------------------------------------
-
-        // Use lowercase strings just in case a proxy flattened the case
         String traceId = request.getHeader("x-trace-id"); 
         String xForwardedFor = request.getHeader("x-forwarded-for");
-        String systemRemoteIp = request.getRemoteAddr();
+        String remoteAddr = request.getRemoteAddr();
 
-        System.out.println("\n--- [BACKEND VALIDATE STAGE] ---");
-        System.out.println("Trace ID: " + (traceId != null ? traceId : "N/A"));
-        System.out.println("1. System (Linux Kernel) sees Source IP: " + systemRemoteIp);
-        
+        // 1. Determine if the current RemoteAddr is an internal cluster IP
+        boolean isInternal = remoteAddr.startsWith("10.") || 
+                             remoteAddr.startsWith("172.") || 
+                             remoteAddr.startsWith("192.168.") ||
+                             remoteAddr.equalsIgnoreCase("localhost");
+
+        // 2. Resolve the final validated IP
         String validatedIp;
-        // Check both the raw header and the processed remote address
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+        if (!isInternal) {
+            validatedIp = remoteAddr;
+        } else if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             validatedIp = xForwardedFor.split(",")[0].trim();
-            System.out.println("2. Validation Logic: X-Forwarded-For header detected!");
-        } else if (!systemRemoteIp.startsWith("10.") && !systemRemoteIp.startsWith("172.")) {
-            // If Spring already processed the header, it moved the real IP into getRemoteAddr()
-            validatedIp = systemRemoteIp;
-            System.out.println("2. Validation Logic: Header was processed by Spring. Using System IP.");
         } else {
-            validatedIp = systemRemoteIp;
-            System.out.println("2. Validation Logic: No external headers found. Using System IP.");
+            validatedIp = remoteAddr;
         }
-        
-        System.out.println("3. Final Validated IP: " + validatedIp);
-        System.out.println("--------------------------------\n");
+
+        // 3. Structured Logging for Production Traceability
+        System.out.printf("[Trace-%s] Backend Validation: Received=%s, Validated=%s%n", 
+                          (traceId != null ? traceId : "N/A"), remoteAddr, validatedIp);
 
         return Collections.singletonMap("ip", validatedIp);
     }
