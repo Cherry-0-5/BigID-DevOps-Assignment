@@ -3,7 +3,7 @@ const axios = require('axios');
 const app = express();
 
 const PORT = process.env.PORT || 8080;
-const BACKEND_URL = process.env.BACKEND_URL || 'http://ip-echo-service:8088';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://ip-echo-api-service:8088';
 
 app.set('view engine', 'ejs');
 
