@@ -6,53 +6,40 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Controller providing IP echo functionality and specialized Kubernetes probes.
- * Built for port 8088 with custom health and readiness paths.
- */
 @RestController
 public class IpController {
 
-    /**
-     * Primary endpoint: Returns the client's originating IP address.
-     * Handles X-Forwarded-For headers for apps behind Ingress/Load Balancers.
-     *
-     * @param request The incoming HTTP request.
-     * @return A Map containing the "ip" key and the string IP address.
-     */
     @GetMapping("/")
     public Map<String, String> getClientIp(HttpServletRequest request) {
+        String traceId = request.getHeader("X-Trace-ID");
         String xForwardedFor = request.getHeader("X-Forwarded-For");
-        String remoteIp;
+        String systemRemoteIp = request.getRemoteAddr();
 
-//	String podIp = System.getenv("POD_IP");
-	
+        System.out.println("\n--- [BACKEND VALIDATE STAGE] ---");
+        System.out.println("Trace ID: " + (traceId != null ? traceId : "N/A"));
+        System.out.println("1. System (Linux Kernel) sees Source IP: " + systemRemoteIp);
+        
+        String validatedIp;
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            remoteIp = xForwardedFor.split(",")[0].trim();
+            validatedIp = xForwardedFor.split(",")[0].trim();
+            System.out.println("2. Validation Logic: X-Forwarded-For detected!");
+            System.out.println("3. Extracted Client IP: " + validatedIp);
         } else {
-            remoteIp = request.getRemoteAddr();
+            validatedIp = systemRemoteIp;
+            System.out.println("2. Validation Logic: No headers found. Using System IP.");
         }
+        System.out.println("--------------------------------\n");
 
-        return Collections.singletonMap("ip", remoteIp);
+        return Collections.singletonMap("ip", validatedIp);
     }
 
-    /**
-     * Liveness Probe: Used by Kubernetes to check if the JVM is alive.
-     * Path: /health
-     */
     @GetMapping("/health")
     public Map<String, String> liveness() {
         return Collections.singletonMap("status", "UP");
     }
 
-    /**
-     * Readiness Probe: Used by Kubernetes to check if the app is ready for traffic.
-     * Path: /ready
-     */
     @GetMapping("/ready")
     public Map<String, String> readiness() {
-        // In a production scenario, you could add logic here to check
-        // if critical downstream dependencies are reachable.
         return Collections.singletonMap("status", "READY");
     }
 }
