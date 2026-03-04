@@ -12,6 +12,7 @@ pipeline {
         GITHUB_TOKEN    = credentials('GitHub-Token') 
         CHART_PATH      = "charts/ip-echo-chart"
         NAMESPACE       = "staging"
+	SOURCE_BRANCH   = "release/DEV"
         GIT_SHA         = ""
         IMAGE_TAG       = ""
         API_SERVER_URL  = "https://155.248.254.93:6443" 
@@ -180,20 +181,20 @@ pipeline {
                 script {
                     echo "Creating Pull Request and triggering Auto-Merge..."
                     sh """
-	    export GH_TOKEN=${GITHUB_TOKEN}
+			    export GH_TOKEN=${GITHUB_TOKEN}
             
-            PR_EXISTS=\$(gh pr list --head ${env.BRANCH_NAME} --json number -q '.[0].number')
+            		    PR_EXISTS=\$(gh pr list --head ${env.SOURCE_BRANCH} --json number -q '.[0].number')
             
-            if [ -z "\$PR_EXISTS" ]; then
-                echo "Creating new PR..."
-                gh pr create --base main --head ${env.BRANCH_NAME} \
-                    --title "Automated Merge: Build #${env.BUILD_NUMBER}" \
-                    --body "Deployment and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
-            else
-                echo "Pull request already exists for ${env.BRANCH_NAME}."
-            fi
+        		    if [ -z "\$PR_EXISTS" ]; then
+     			        echo "Creating new PR..."
+                		gh pr create --base main --head ${env.SOURCE_BRANCH} \
+                    		--title "Automated Merge: Build #${env.BUILD_NUMBER}" \
+                    		--body "Deployment and Smoke Tests Passed. Promoting ${IMAGE_TAG} to main."
+            		   else
+                		echo "Pull request already exists for ${env.SOURCE_BRANCH}."
+            		   fi
             
-            gh pr merge --auto --squash --delete-branch ${env.BRANCH_NAME}
+            		   gh pr merge --auto --squash --delete-branch ${env.SOURCE_BRANCH}
 		    """
                 }
             }
@@ -232,5 +233,6 @@ pipeline {
         }
     }
 }
+
 
 
