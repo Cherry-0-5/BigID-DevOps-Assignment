@@ -193,9 +193,9 @@ pipeline {
             		   else
                 		echo "Pull request already exists for ${env.SOURCE_BRANCH}."
             		   fi
-            
-            		   gh pr merge --auto --squash --delete-branch ${env.SOURCE_BRANCH}
-		    """
+         
+			   gh pr merge --auto --squash   
+            		"""
                 }
             }
         }

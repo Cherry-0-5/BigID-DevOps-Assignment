@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
+// Trust the proxy to populate req.ip, though we will also manually check headers
 app.set('trust proxy', true);
 
 const PORT = process.env.PORT || 8080;
@@ -11,9 +12,16 @@ app.set('view engine', 'ejs');
 
 app.get('/', async (req, res) => {
     const traceId = Math.floor(Math.random() * 100000);
-    const clientIp = req.ip;
+    
+    /**
+     * FIX: Manual Header Extraction
+     * We look at X-Forwarded-For first. If it's a list (e.g. "1.2.3.4, 10.0.0.1"), 
+     * we split it and take the first one (the actual client).
+     */
+    const forwarded = req.headers['x-forwarded-for'];
+    const clientIp = forwarded ? forwarded.split(',')[0].trim() : req.ip;
 
-    console.log(`[Trace-${traceId}] STAGE 1: Frontend received request from Client IP: ${clientIp}`);
+    console.log(`[Trace-${traceId}] STAGE 1: Frontend received request. Header: ${forwarded} | Detected: ${clientIp}`);
     console.log(`[Trace-${traceId}] STAGE 2: Re-routing to Backend (${BACKEND_URL}) to validate...`);
 
     try {
@@ -21,18 +29,18 @@ app.get('/', async (req, res) => {
         const response = await axios.get(BACKEND_URL, { 
             timeout: 3000,
             headers: {
-                'X-Forwarded-For': clientIp,
-                'X-Trace-ID': traceId // Custom header to pass the ID to Java
+                'X-Forwarded-For': clientIp, // Passing the cleaned IP to Java
+                'X-Trace-ID': traceId
             }
         });
         const duration = Date.now() - startTime;
 
-        console.log(`[Trace-${traceId}] STAGE 4: Backend validated IP as ${response.data.ip}. (Took ${duration}ms)`);
+        console.log(`[Trace-${traceId}] STAGE 4: Backend response received. Validated IP: ${response.data.ip}. (Took ${duration}ms)`);
         console.log(`[Trace-${traceId}] STAGE 5: Sending final response back to User.`);
         
         res.render('index', { 
             ip: response.data.ip, 
-            status: `Validated (Trace: ${traceId})`, 
+            status: `Connected - (Trace: ${traceId})`, 
             backend: BACKEND_URL,
             error: null 
         });
