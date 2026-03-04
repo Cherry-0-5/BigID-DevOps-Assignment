@@ -21,29 +21,36 @@ public class IpController {
         }
         // --------------------------------------------
 
-        // Use lowercase strings just in case a proxy flattened the case
         String traceId = request.getHeader("x-trace-id"); 
         String xForwardedFor = request.getHeader("x-forwarded-for");
-        String systemRemoteIp = request.getRemoteAddr();
+        
+        // This address is the key: If server.tomcat.remoteip.internal-proxies is set,
+        // Spring Boot moves the X-Forwarded-For value into this variable.
+        String remoteAddr = request.getRemoteAddr();
 
         System.out.println("\n--- [BACKEND VALIDATE STAGE] ---");
         System.out.println("Trace ID: " + (traceId != null ? traceId : "N/A"));
-        System.out.println("1. System (Linux Kernel) sees Source IP: " + systemRemoteIp);
         
         String validatedIp;
-        // Check both the raw header and the processed remote address
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+
+        /**
+         * LOGIC ANALYSIS:
+         * 1. If remoteAddr is NOT an internal Kubernetes IP (10.x or 172.x), 
+         * it means Spring/Tomcat already extracted the Public IP for us.
+         * 2. If it is internal, we check if x-forwarded-for is still available.
+         */
+        if (!remoteAddr.startsWith("10.") && !remoteAddr.startsWith("172.") && !remoteAddr.equals("127.0.0.1")) {
+            validatedIp = remoteAddr;
+            System.out.println("1. Logic: Using Spring-Processed Remote Address.");
+        } else if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             validatedIp = xForwardedFor.split(",")[0].trim();
-            System.out.println("2. Validation Logic: X-Forwarded-For header detected!");
-        } else if (!systemRemoteIp.startsWith("10.") && !systemRemoteIp.startsWith("172.")) {
-            // If Spring already processed the header, it moved the real IP into getRemoteAddr()
-            validatedIp = systemRemoteIp;
-            System.out.println("2. Validation Logic: Header was processed by Spring. Using System IP.");
+            System.out.println("1. Logic: Using Raw X-Forwarded-For Header.");
         } else {
-            validatedIp = systemRemoteIp;
-            System.out.println("2. Validation Logic: No external headers found. Using System IP.");
+            validatedIp = remoteAddr;
+            System.out.println("1. Logic: No external IP detected. Using System IP.");
         }
-        
+
+        System.out.println("2. Detected Source IP: " + remoteAddr);
         System.out.println("3. Final Validated IP: " + validatedIp);
         System.out.println("--------------------------------\n");
 
