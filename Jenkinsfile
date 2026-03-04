@@ -194,6 +194,9 @@ pipeline {
                 		echo "Pull request already exists for ${env.SOURCE_BRANCH}."
             		   fi
         
+			   gh pr merge ${env.SOURCE_BRANCH} --squash --admin \
+		                --subject "Automated Promotion: Build #${env.BUILD_NUMBER}" \
+                		--body "Deployment to OKE Cluster and Smoke test are success. Promoting to main."
             		"""
                 }
             }
